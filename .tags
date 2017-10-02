@@ -1,0 +1,190 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+AlignedDataset	data/aligned_dataset.py	/^class AlignedDataset(BaseDataset):$/;"	c
+BaseDataLoader	data/base_data_loader.py	/^class BaseDataLoader():$/;"	c
+BaseDataset	data/base_dataset.py	/^class BaseDataset(data.Dataset):$/;"	c
+BaseModel	models/base_model.py	/^class BaseModel():$/;"	c
+BaseOptions	options/base_options.py	/^class BaseOptions():$/;"	c
+CreateDataLoader	data/data_loader.py	/^def CreateDataLoader(opt):$/;"	f
+CreateDataset	data/custom_dataset_data_loader.py	/^def CreateDataset(opt):$/;"	f
+CustomDatasetDataLoader	data/custom_dataset_data_loader.py	/^class CustomDatasetDataLoader(BaseDataLoader):$/;"	c
+CycleGANModel	models/cycle_gan_model.py	/^class CycleGANModel(BaseModel):$/;"	c
+GANLoss	models/networks.py	/^class GANLoss(nn.Module):$/;"	c
+GetData	util/get_data.py	/^class GetData(object):$/;"	c
+HTML	util/html.py	/^class HTML:$/;"	c
+IMG_EXTENSIONS	data/image_folder.py	/^IMG_EXTENSIONS = [$/;"	v
+ImageFolder	data/image_folder.py	/^class ImageFolder(data.Dataset):$/;"	c
+ImagePool	util/image_pool.py	/^class ImagePool():$/;"	c
+NLayerDiscriminator	models/networks.py	/^class NLayerDiscriminator(nn.Module):$/;"	c
+Pix2PixModel	models/pix2pix_model.py	/^class Pix2PixModel(BaseModel):$/;"	c
+ResnetBlock	models/networks.py	/^class ResnetBlock(nn.Module):$/;"	c
+ResnetGenerator	models/networks.py	/^class ResnetGenerator(nn.Module):$/;"	c
+SingleDataset	data/single_dataset.py	/^class SingleDataset(BaseDataset):$/;"	c
+TestModel	models/test_model.py	/^class TestModel(BaseModel):$/;"	c
+TestOptions	options/test_options.py	/^class TestOptions(BaseOptions):$/;"	c
+TrainOptions	options/train_options.py	/^class TrainOptions(BaseOptions):$/;"	c
+UnalignedDataset	data/unaligned_dataset.py	/^class UnalignedDataset(BaseDataset):$/;"	c
+UnetGenerator	models/networks.py	/^class UnetGenerator(nn.Module):$/;"	c
+UnetSkipConnectionBlock	models/networks.py	/^class UnetSkipConnectionBlock(nn.Module):$/;"	c
+Visualizer	util/visualizer.py	/^class Visualizer():$/;"	c
+__call__	models/networks.py	/^    def __call__(self, input, target_is_real):$/;"	m	class:GANLoss	file:
+__getitem__	data/aligned_dataset.py	/^    def __getitem__(self, index):$/;"	m	class:AlignedDataset	file:
+__getitem__	data/image_folder.py	/^    def __getitem__(self, index):$/;"	m	class:ImageFolder	file:
+__getitem__	data/single_dataset.py	/^    def __getitem__(self, index):$/;"	m	class:SingleDataset	file:
+__getitem__	data/unaligned_dataset.py	/^    def __getitem__(self, index):$/;"	m	class:UnalignedDataset	file:
+__init__	data/base_data_loader.py	/^    def __init__(self):$/;"	m	class:BaseDataLoader
+__init__	data/base_dataset.py	/^    def __init__(self):$/;"	m	class:BaseDataset
+__init__	data/image_folder.py	/^    def __init__(self, root, transform=None, return_paths=False,$/;"	m	class:ImageFolder
+__init__	models/networks.py	/^    def __init__(self, dim, padding_type, norm_layer, use_dropout):$/;"	m	class:ResnetBlock
+__init__	models/networks.py	/^    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_sigmoid=False, gpu_ids=[]):$/;"	m	class:NLayerDiscriminator
+__init__	models/networks.py	/^    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, gpu_ids=[], padding_type='reflect'):$/;"	m	class:ResnetGenerator
+__init__	models/networks.py	/^    def __init__(self, input_nc, output_nc, num_downs, ngf=64,$/;"	m	class:UnetGenerator
+__init__	models/networks.py	/^    def __init__(self, outer_nc, inner_nc,$/;"	m	class:UnetSkipConnectionBlock
+__init__	models/networks.py	/^    def __init__(self, use_lsgan=True, target_real_label=1.0, target_fake_label=0.0,$/;"	m	class:GANLoss
+__init__	options/base_options.py	/^    def __init__(self):$/;"	m	class:BaseOptions
+__init__	util/get_data.py	/^    def __init__(self, technique='cyclegan', verbose=True):$/;"	m	class:GetData
+__init__	util/html.py	/^    def __init__(self, web_dir, title, reflesh=0):$/;"	m	class:HTML
+__init__	util/image_pool.py	/^    def __init__(self, pool_size):$/;"	m	class:ImagePool
+__init__	util/visualizer.py	/^    def __init__(self, opt):$/;"	m	class:Visualizer
+__len__	data/aligned_dataset.py	/^    def __len__(self):$/;"	m	class:AlignedDataset	file:
+__len__	data/custom_dataset_data_loader.py	/^    def __len__(self):$/;"	m	class:CustomDatasetDataLoader	file:
+__len__	data/image_folder.py	/^    def __len__(self):$/;"	m	class:ImageFolder	file:
+__len__	data/single_dataset.py	/^    def __len__(self):$/;"	m	class:SingleDataset	file:
+__len__	data/unaligned_dataset.py	/^    def __len__(self):$/;"	m	class:UnalignedDataset	file:
+__scale_width	data/base_dataset.py	/^def __scale_width(img, target_width):$/;"	f	file:
+_download_data	util/get_data.py	/^    def _download_data(self, dataset_url, save_path):$/;"	m	class:GetData
+_get_options	util/get_data.py	/^    def _get_options(r):$/;"	m	class:GetData
+_present_options	util/get_data.py	/^    def _present_options(self):$/;"	m	class:GetData
+_print	util/get_data.py	/^    def _print(self, text):$/;"	m	class:GetData
+add_header	util/html.py	/^    def add_header(self, str):$/;"	m	class:HTML
+add_images	util/html.py	/^    def add_images(self, ims, txts, links, width=400):$/;"	m	class:HTML
+add_table	util/html.py	/^    def add_table(self, border=1):$/;"	m	class:HTML
+backward_D	models/pix2pix_model.py	/^    def backward_D(self):$/;"	m	class:Pix2PixModel
+backward_D_A	models/cycle_gan_model.py	/^    def backward_D_A(self):$/;"	m	class:CycleGANModel
+backward_D_B	models/cycle_gan_model.py	/^    def backward_D_B(self):$/;"	m	class:CycleGANModel
+backward_D_basic	models/cycle_gan_model.py	/^    def backward_D_basic(self, netD, real, fake):$/;"	m	class:CycleGANModel
+backward_G	models/cycle_gan_model.py	/^    def backward_G(self):$/;"	m	class:CycleGANModel
+backward_G	models/pix2pix_model.py	/^    def backward_G(self):$/;"	m	class:Pix2PixModel
+build_conv_block	models/networks.py	/^    def build_conv_block(self, dim, padding_type, norm_layer, use_dropout):$/;"	m	class:ResnetBlock
+chunk	util/png.py	/^  def chunk(tag, data):$/;"	f	function:encode
+create_model	models/models.py	/^def create_model(opt):$/;"	f
+data_loader	test.py	/^data_loader = CreateDataLoader(opt)$/;"	v
+data_loader	train.py	/^data_loader = CreateDataLoader(opt)$/;"	v
+dataset	test.py	/^dataset = data_loader.load_data()$/;"	v
+dataset	train.py	/^dataset = data_loader.load_data()$/;"	v
+dataset_size	train.py	/^dataset_size = len(data_loader)$/;"	v
+default_loader	data/image_folder.py	/^def default_loader(path):$/;"	f
+define_D	models/networks.py	/^def define_D(input_nc, ndf, which_model_netD,$/;"	f
+define_G	models/networks.py	/^def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, gpu_ids=[]):$/;"	f
+diagnose_network	util/util.py	/^def diagnose_network(net, name='network'):$/;"	f
+display_current_results	util/visualizer.py	/^    def display_current_results(self, visuals, epoch):$/;"	m	class:Visualizer
+encode	util/png.py	/^def encode(buf, width, height):$/;"	f
+epoch_iter	train.py	/^        epoch_iter = total_steps - dataset_size * (epoch - 1)$/;"	v
+epoch_start_time	train.py	/^    epoch_start_time = time.time()$/;"	v
+errors	train.py	/^            errors = model.get_current_errors()$/;"	v
+forward	models/base_model.py	/^    def forward(self):$/;"	m	class:BaseModel
+forward	models/cycle_gan_model.py	/^    def forward(self):$/;"	m	class:CycleGANModel
+forward	models/networks.py	/^    def forward(self, input):$/;"	m	class:NLayerDiscriminator
+forward	models/networks.py	/^    def forward(self, input):$/;"	m	class:ResnetGenerator
+forward	models/networks.py	/^    def forward(self, input):$/;"	m	class:UnetGenerator
+forward	models/networks.py	/^    def forward(self, x):$/;"	m	class:ResnetBlock
+forward	models/networks.py	/^    def forward(self, x):$/;"	m	class:UnetSkipConnectionBlock
+forward	models/pix2pix_model.py	/^    def forward(self):$/;"	m	class:Pix2PixModel
+get	util/get_data.py	/^    def get(self, save_path, dataset=None):$/;"	m	class:GetData
+get_current_errors	models/base_model.py	/^    def get_current_errors(self):$/;"	m	class:BaseModel
+get_current_errors	models/cycle_gan_model.py	/^    def get_current_errors(self):$/;"	m	class:CycleGANModel
+get_current_errors	models/pix2pix_model.py	/^    def get_current_errors(self):$/;"	m	class:Pix2PixModel
+get_current_visuals	models/base_model.py	/^    def get_current_visuals(self):$/;"	m	class:BaseModel
+get_current_visuals	models/cycle_gan_model.py	/^    def get_current_visuals(self):$/;"	m	class:CycleGANModel
+get_current_visuals	models/pix2pix_model.py	/^    def get_current_visuals(self):$/;"	m	class:Pix2PixModel
+get_current_visuals	models/test_model.py	/^    def get_current_visuals(self):$/;"	m	class:TestModel
+get_image_dir	util/html.py	/^    def get_image_dir(self):$/;"	m	class:HTML
+get_image_paths	models/base_model.py	/^    def get_image_paths(self):$/;"	m	class:BaseModel
+get_image_paths	models/cycle_gan_model.py	/^    def get_image_paths(self):$/;"	m	class:CycleGANModel
+get_image_paths	models/pix2pix_model.py	/^    def get_image_paths(self):$/;"	m	class:Pix2PixModel
+get_image_paths	models/test_model.py	/^    def get_image_paths(self):$/;"	m	class:TestModel
+get_norm_layer	models/networks.py	/^def get_norm_layer(norm_type='instance'):$/;"	f
+get_target_tensor	models/networks.py	/^    def get_target_tensor(self, input, target_is_real):$/;"	m	class:GANLoss
+get_transform	data/base_dataset.py	/^def get_transform(opt):$/;"	f
+html	util/html.py	/^    html = HTML('web\/', 'test_html')$/;"	v	class:HTML
+img_path	test.py	/^    img_path = model.get_image_paths()$/;"	v
+ims	util/html.py	/^    ims = []$/;"	v	class:HTML
+info	util/util.py	/^def info(object, spacing=10, collapse=1):$/;"	f
+initialize	data/aligned_dataset.py	/^    def initialize(self, opt):$/;"	m	class:AlignedDataset
+initialize	data/base_data_loader.py	/^    def initialize(self, opt):$/;"	m	class:BaseDataLoader
+initialize	data/base_dataset.py	/^    def initialize(self, opt):$/;"	m	class:BaseDataset
+initialize	data/custom_dataset_data_loader.py	/^    def initialize(self, opt):$/;"	m	class:CustomDatasetDataLoader
+initialize	data/single_dataset.py	/^    def initialize(self, opt):$/;"	m	class:SingleDataset
+initialize	data/unaligned_dataset.py	/^    def initialize(self, opt):$/;"	m	class:UnalignedDataset
+initialize	models/base_model.py	/^    def initialize(self, opt):$/;"	m	class:BaseModel
+initialize	models/cycle_gan_model.py	/^    def initialize(self, opt):$/;"	m	class:CycleGANModel
+initialize	models/pix2pix_model.py	/^    def initialize(self, opt):$/;"	m	class:Pix2PixModel
+initialize	models/test_model.py	/^    def initialize(self, opt):$/;"	m	class:TestModel
+initialize	options/base_options.py	/^    def initialize(self):$/;"	m	class:BaseOptions
+initialize	options/test_options.py	/^    def initialize(self):$/;"	m	class:TestOptions
+initialize	options/train_options.py	/^    def initialize(self):$/;"	m	class:TrainOptions
+is_image_file	data/image_folder.py	/^def is_image_file(filename):$/;"	f
+iter_start_time	train.py	/^        iter_start_time = time.time()$/;"	v
+links	util/html.py	/^    links = []$/;"	v	class:HTML
+load_data	data/base_data_loader.py	/^    def load_data():$/;"	m	class:BaseDataLoader
+load_data	data/custom_dataset_data_loader.py	/^    def load_data(self):$/;"	m	class:CustomDatasetDataLoader
+load_network	models/base_model.py	/^    def load_network(self, network, network_label, epoch_label):$/;"	m	class:BaseModel
+make_dataset	data/image_folder.py	/^def make_dataset(dir):$/;"	f
+mkdir	util/util.py	/^def mkdir(path):$/;"	f
+mkdirs	util/util.py	/^def mkdirs(paths):$/;"	f
+model	test.py	/^model = create_model(opt)$/;"	v
+model	train.py	/^model = create_model(opt)$/;"	v
+name	data/aligned_dataset.py	/^    def name(self):$/;"	m	class:AlignedDataset
+name	data/base_dataset.py	/^    def name(self):$/;"	m	class:BaseDataset
+name	data/custom_dataset_data_loader.py	/^    def name(self):$/;"	m	class:CustomDatasetDataLoader
+name	data/single_dataset.py	/^    def name(self):$/;"	m	class:SingleDataset
+name	data/unaligned_dataset.py	/^    def name(self):$/;"	m	class:UnalignedDataset
+name	models/base_model.py	/^    def name(self):$/;"	m	class:BaseModel
+name	models/cycle_gan_model.py	/^    def name(self):$/;"	m	class:CycleGANModel
+name	models/pix2pix_model.py	/^    def name(self):$/;"	m	class:Pix2PixModel
+name	models/test_model.py	/^    def name(self):$/;"	m	class:TestModel
+opt	test.py	/^opt = TestOptions().parse()$/;"	v
+opt	train.py	/^opt = TrainOptions().parse()$/;"	v
+optimize_parameters	models/base_model.py	/^    def optimize_parameters(self):$/;"	m	class:BaseModel
+optimize_parameters	models/cycle_gan_model.py	/^    def optimize_parameters(self):$/;"	m	class:CycleGANModel
+optimize_parameters	models/pix2pix_model.py	/^    def optimize_parameters(self):$/;"	m	class:Pix2PixModel
+parse	options/base_options.py	/^    def parse(self):$/;"	m	class:BaseOptions
+plot_current_errors	util/visualizer.py	/^    def plot_current_errors(self, epoch, counter_ratio, opt, errors):$/;"	f
+print_current_errors	util/visualizer.py	/^    def print_current_errors(self, epoch, i, errors, t):$/;"	f
+print_network	models/networks.py	/^def print_network(net):$/;"	f
+print_numpy	util/util.py	/^def print_numpy(x, val=True, shp=False):$/;"	f
+query	util/image_pool.py	/^    def query(self, images):$/;"	m	class:ImagePool
+raw_data	util/png.py	/^  def raw_data():$/;"	f	function:encode
+save	models/base_model.py	/^    def save(self, label):$/;"	m	class:BaseModel
+save	models/cycle_gan_model.py	/^    def save(self, label):$/;"	m	class:CycleGANModel
+save	models/pix2pix_model.py	/^    def save(self, label):$/;"	m	class:Pix2PixModel
+save	util/html.py	/^    def save(self):$/;"	m	class:HTML
+save_image	util/util.py	/^def save_image(image_numpy, image_path):$/;"	f
+save_images	util/visualizer.py	/^    def save_images(self, webpage, visuals, image_path):$/;"	f
+save_network	models/base_model.py	/^    def save_network(self, network, network_label, epoch_label, gpu_ids):$/;"	m	class:BaseModel
+set_input	models/base_model.py	/^    def set_input(self, input):$/;"	m	class:BaseModel
+set_input	models/cycle_gan_model.py	/^    def set_input(self, input):$/;"	m	class:CycleGANModel
+set_input	models/pix2pix_model.py	/^    def set_input(self, input):$/;"	m	class:Pix2PixModel
+set_input	models/test_model.py	/^    def set_input(self, input):$/;"	m	class:TestModel
+t	train.py	/^            t = (time.time() - iter_start_time) \/ opt.batchSize$/;"	v
+tensor2im	util/util.py	/^def tensor2im(image_tensor, imtype=np.uint8):$/;"	f
+test	models/base_model.py	/^    def test(self):$/;"	m	class:BaseModel
+test	models/cycle_gan_model.py	/^    def test(self):$/;"	m	class:CycleGANModel
+test	models/pix2pix_model.py	/^    def test(self):$/;"	m	class:Pix2PixModel
+test	models/test_model.py	/^    def test(self):$/;"	m	class:TestModel
+total_steps	train.py	/^total_steps = 0$/;"	v
+txts	util/html.py	/^    txts = []$/;"	v	class:HTML
+update_learning_rate	models/base_model.py	/^    def update_learning_rate():$/;"	m	class:BaseModel
+update_learning_rate	models/cycle_gan_model.py	/^    def update_learning_rate(self):$/;"	m	class:CycleGANModel
+update_learning_rate	models/pix2pix_model.py	/^    def update_learning_rate(self):$/;"	m	class:Pix2PixModel
+varname	util/util.py	/^def varname(p):$/;"	f
+visualizer	test.py	/^visualizer = Visualizer(opt)$/;"	v
+visualizer	train.py	/^visualizer = Visualizer(opt)$/;"	v
+visuals	test.py	/^    visuals = model.get_current_visuals()$/;"	v
+web_dir	test.py	/^web_dir = os.path.join(opt.results_dir, opt.name, '%s_%s' % (opt.phase, opt.which_epoch))$/;"	v
+webpage	test.py	/^webpage = html.HTML(web_dir, 'Experiment = %s, Phase = %s, Epoch = %s' % (opt.name, opt.phase, opt.which_epoch))$/;"	v
+weights_init	models/networks.py	/^def weights_init(m):$/;"	f

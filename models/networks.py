@@ -4,6 +4,7 @@ from torch.nn import init
 import functools
 from torch.autograd import Variable
 import numpy as np
+import pdb
 ###############################################################################
 # Functions
 ###############################################################################
@@ -124,8 +125,9 @@ class GANLoss(nn.Module):
 
     def __call__(self, input, target_is_real):
         target_tensor = self.get_target_tensor(input, target_is_real)
-        return self.loss(input, target_tensor)
-
+        # return input - target_tensor
+        #return self.loss(input, target_tensor)
+        return torch.mean((1-target_tensor) + (2*target_tensor -1)*input)
 
 # Defines the generator that consists of Resnet blocks between a few
 # downsampling/upsampling operations.

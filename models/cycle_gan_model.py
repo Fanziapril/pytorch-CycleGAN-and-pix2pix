@@ -11,6 +11,7 @@ from . import networks
 import sys
 
 
+
 class CycleGANModel(BaseModel):
     def name(self):
         return 'CycleGANModel'
@@ -162,10 +163,19 @@ class CycleGANModel(BaseModel):
         self.optimizer_D_A.zero_grad()
         self.backward_D_A()
         self.optimizer_D_A.step()
+
+        #test
+        for p in self.netD_A.parameters():
+            p.data.clamp_(-0.01, 0.01)
+
         # D_B
         self.optimizer_D_B.zero_grad()
         self.backward_D_B()
         self.optimizer_D_B.step()
+        
+        #test
+        for p in self.netD_B.parameters():
+            p.data.clamp_(-0.01, 0.01)
 
     def get_current_errors(self):
         D_A = self.loss_D_A.data[0]
