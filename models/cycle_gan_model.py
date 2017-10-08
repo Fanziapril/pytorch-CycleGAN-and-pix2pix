@@ -57,6 +57,9 @@ class CycleGANModel(BaseModel):
             self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
             self.criterionCycle = torch.nn.L1Loss()
             self.criterionIdt = torch.nn.L1Loss()
+            self.l1Loss = torch.nn.MSELoss()
+            #self.criterionShape = self.ShapeLoss(tmpA, tmpB)
+
             # initialize optimizers
             self.optimizer_G = torch.optim.Adam(itertools.chain(self.netG_A.parameters(), self.netG_B.parameters()),
                                                 lr=opt.lr, betas=(opt.beta1, 0.999))
@@ -70,6 +73,7 @@ class CycleGANModel(BaseModel):
             networks.print_network(self.netD_A)
             networks.print_network(self.netD_B)
         print('-----------------------------------------------')
+
 
     def set_input(self, input):
         AtoB = self.opt.which_direction == 'AtoB'
@@ -133,15 +137,21 @@ class CycleGANModel(BaseModel):
             self.loss_idt_A = 0
             self.loss_idt_B = 0
 
+
         # GAN loss
         # D_A(G_A(A))
+        lambda_shape = 0.2
         self.fake_B = self.netG_A.forward(self.real_A)
         pred_fake = self.netD_A.forward(self.fake_B)
         self.loss_G_A = self.criterionGAN(pred_fake, True)
+        # Shape loss
+        self.loss_shape_A = self.shapeLoss(self.fake_B, self.real_A) * lambda_shape
         # D_B(G_B(B))
         self.fake_A = self.netG_B.forward(self.real_B)
         pred_fake = self.netD_B.forward(self.fake_A)
         self.loss_G_B = self.criterionGAN(pred_fake, True)
+        # Shape loss
+        self.loss_shape_B = self.shapeLoss(self.fake_A, self.real_B) * lambda_shape
         # Forward cycle loss
         self.rec_A = self.netG_B.forward(self.fake_B)
         self.loss_cycle_A = self.criterionCycle(self.rec_A, self.real_A) * lambda_A
@@ -149,8 +159,22 @@ class CycleGANModel(BaseModel):
         self.rec_B = self.netG_A.forward(self.fake_A)
         self.loss_cycle_B = self.criterionCycle(self.rec_B, self.real_B) * lambda_B
         # combined loss
-        self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B
+
+        self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B + self.loss_shape_A + self.loss_shape_B
         self.loss_G.backward()
+
+    def shapeLoss(self, img1, img2):
+        laplacianMatrix = torch.zeros(3, 3, 3, 3)
+        laplacianMatrix[0, 0, :, :] = 1
+        laplacianMatrix[1, 1, :, :] = 1
+        laplacianMatrix[2, 2, :, :] = 1
+        laplacianMatrix[0, 0, 1, 1] = -8
+        laplacianMatrix[1, 1, 1, 1] = -8
+        laplacianMatrix[2, 2, 1, 1] = -8
+        laplacianMatrix = Variable(laplacianMatrix.cuda())
+        imgGrad1 = torch.nn.functional.conv2d(img1, laplacianMatrix, padding=1)
+        imgGrad2 = torch.nn.functional.conv2d(img2, laplacianMatrix, padding=1)
+        return self.l1Loss(imgGrad1, imgGrad2)
 
     def optimize_parameters(self):
         # forward
