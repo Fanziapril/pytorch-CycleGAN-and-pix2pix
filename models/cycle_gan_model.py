@@ -125,6 +125,7 @@ class CycleGANModel(BaseModel):
         lambda_idt = self.opt.identity
         lambda_A = self.opt.lambda_A
         lambda_B = self.opt.lambda_B
+        lambda_shape = self.opt.shape
         # Identity loss
         if lambda_idt > 0:
             # G_A should be identity if real_B is fed.
@@ -140,7 +141,7 @@ class CycleGANModel(BaseModel):
 
         # GAN loss
         # D_A(G_A(A))
-        lambda_shape = 0.2
+        #lambda_shape = 0.2
         self.fake_B = self.netG_A.forward(self.real_A)
         pred_fake = self.netD_A.forward(self.fake_B)
         self.loss_G_A = self.criterionGAN(pred_fake, True)
