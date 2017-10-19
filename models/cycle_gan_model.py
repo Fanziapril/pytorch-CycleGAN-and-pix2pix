@@ -43,11 +43,20 @@ class CycleGANModel(BaseModel):
                                             opt.n_layers_D, opt.norm, use_sigmoid, self.gpu_ids)
         if not self.isTrain or opt.continue_train:
             which_epoch = opt.which_epoch
-            self.load_network(self.netG_A, 'G_A', which_epoch)
-            self.load_network(self.netG_B, 'G_B', which_epoch)
+            self.load_network(self.netG_A, 'G_A', which_epoch, opt.save_dir)
+            self.load_network(self.netG_B, 'G_B', which_epoch, opt.save_dir)
             if self.isTrain:
-                self.load_network(self.netD_A, 'D_A', which_epoch)
-                self.load_network(self.netD_B, 'D_B', which_epoch)
+                self.load_network(self.netD_A, 'D_A', which_epoch, opt.save_dir)
+                self.load_network(self.netD_B, 'D_B', which_epoch, opt.save_dir)
+        if opt.pre_train:
+            which_epoch = 200
+            dirA = '../Experiments/models/3_faces_pix2pix/'
+            dirB = '../Experiments/models/2_faces_pix2pix/'
+            self.load_network(self.netG_A, 'G', which_epoch, dirA)
+            self.load_network(self.netG_B, 'G', which_epoch, dirB)
+            # self.load_network(self.netD_A, 'D', which_epoch, dirA)
+            # self.load_network(self.netD_B, 'D', which_epoch, dirB)
+
 
         if self.isTrain:
             self.old_lr = opt.lr
