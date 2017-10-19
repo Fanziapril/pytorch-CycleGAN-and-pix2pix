@@ -42,13 +42,14 @@ class CycleGANModel(BaseModel):
                                             opt.which_model_netD,
                                             opt.n_layers_D, opt.norm, use_sigmoid, self.gpu_ids)
         if not self.isTrain or opt.continue_train:
+            save_dir = os.path.join(opt.checkpoints_dir, opt.name)
             which_epoch = opt.which_epoch
-            self.load_network(self.netG_A, 'G_A', which_epoch, opt.save_dir)
-            self.load_network(self.netG_B, 'G_B', which_epoch, opt.save_dir)
+            self.load_network(self.netG_A, 'G_A', which_epoch, save_dir)
+            self.load_network(self.netG_B, 'G_B', which_epoch, save_dir)
             if self.isTrain:
-                self.load_network(self.netD_A, 'D_A', which_epoch, opt.save_dir)
-                self.load_network(self.netD_B, 'D_B', which_epoch, opt.save_dir)
-        if opt.pre_train:
+                self.load_network(self.netD_A, 'D_A', which_epoch, save_dir)
+                self.load_network(self.netD_B, 'D_B', which_epoch, save_dir)
+        if self.isTrain and opt.pre_train:
             which_epoch = 200
             dirA = '../Experiments/models/3_faces_pix2pix/'
             dirB = '../Experiments/models/2_faces_pix2pix/'
