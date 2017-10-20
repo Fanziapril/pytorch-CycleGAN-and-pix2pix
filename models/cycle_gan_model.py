@@ -187,18 +187,19 @@ class CycleGANModel(BaseModel):
         imgGrad2 = torch.nn.functional.conv2d(img2, laplacianMatrix, padding=1)
         return self.l1Loss(imgGrad1, imgGrad2)
 
-    def optimize_parameters(self):
+    def optimize_parameters(self, epoch):
         # forward
         self.forward()
         # G_A and G_B
         self.optimizer_G.zero_grad()
         self.backward_G()
-        self.optimizer_G.step()
+        if epoch > 20:
+            self.optimizer_G.step()
+
         # D_A
         self.optimizer_D_A.zero_grad()
         self.backward_D_A()
         self.optimizer_D_A.step()
-
 
         # D_B
         self.optimizer_D_B.zero_grad()
