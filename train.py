@@ -49,4 +49,4 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
           (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
 
     if epoch > opt.niter:
-        model.update_learning_rate()
+        model.update_learning_rate(epoch)
