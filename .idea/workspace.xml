@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="99c41b12-61a0-492e-8d7f-25193a7714fd" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/train.py" afterPath="$PROJECT_DIR$/train.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -268,7 +267,14 @@
       <option name="project" value="LOCAL" />
       <updated>1508767330816</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="change update learning rate">
+      <created>1508767425083</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1508767425083</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -326,7 +332,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="fix Generator in 20 epoch" />
     <MESSAGE value="add visdom env options" />
-    <option name="LAST_COMMIT_MESSAGE" value="add visdom env options" />
+    <MESSAGE value="change update learning rate" />
+    <option name="LAST_COMMIT_MESSAGE" value="change update learning rate" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
