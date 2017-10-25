@@ -9,7 +9,7 @@ from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
 import sys
-
+#from torch.nn import functional as Func
 
 
 class CycleGANModel(BaseModel):
@@ -32,7 +32,6 @@ class CycleGANModel(BaseModel):
                                         opt.ngf, opt.which_model_netG, opt.norm, not opt.no_dropout, self.gpu_ids)
         self.netG_B = networks.define_G(opt.output_nc, opt.input_nc,
                                         opt.ngf, opt.which_model_netG, opt.norm, not opt.no_dropout, self.gpu_ids)
-
         if self.isTrain:
             use_sigmoid = opt.no_lsgan
             self.netD_A = networks.define_D(opt.output_nc, opt.ndf,
@@ -67,7 +66,7 @@ class CycleGANModel(BaseModel):
             self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
             self.criterionCycle = torch.nn.L1Loss()
             self.criterionIdt = torch.nn.L1Loss()
-            self.l1Loss = torch.nn.MSELoss()
+            self.l2Loss = torch.nn.MSELoss()
             #self.criterionShape = self.ShapeLoss(tmpA, tmpB)
 
             # initialize optimizers
@@ -116,20 +115,22 @@ class CycleGANModel(BaseModel):
         loss_D_real = self.criterionGAN(pred_real, True)
         # Fake
         pred_fake = netD.forward(fake.detach())
+        loss_D_batch = self.batchLoss(netD.feature)
         loss_D_fake = self.criterionGAN(pred_fake, False)
         # Combined loss
         loss_D = (loss_D_real + loss_D_fake) * 0.5
         # backward
         loss_D.backward()
-        return loss_D
+        return loss_D, loss_D_batch
 
     def backward_D_A(self):
         fake_B = self.fake_B_pool.query(self.fake_B)
-        self.loss_D_A = self.backward_D_basic(self.netD_A, self.real_B, fake_B)
+        self.loss_D_A, loss_D_A_batch = self.backward_D_basic(self.netD_A, self.real_B, fake_B)
+        self.loss_D_A = self.loss_D_A + loss_D_A_batch
 
     def backward_D_B(self):
         fake_A = self.fake_A_pool.query(self.fake_A)
-        self.loss_D_B = self.backward_D_basic(self.netD_B, self.real_A, fake_A)
+        self.loss_D_B, _ = self.backward_D_basic(self.netD_B, self.real_A, fake_A)
 
     def backward_G(self):
         lambda_idt = self.opt.identity
@@ -154,7 +155,8 @@ class CycleGANModel(BaseModel):
         #lambda_shape = 0.2
         self.fake_B = self.netG_A.forward(self.real_A)
         pred_fake = self.netD_A.forward(self.fake_B)
-        self.loss_G_A = self.criterionGAN(pred_fake, True)
+        loss_D_batch = self.batchLoss(self.netD_A.feature)
+        self.loss_G_A = self.criterionGAN(pred_fake, True) + loss_D_batch
         # Shape loss
         self.loss_shape_A = self.shapeLoss(self.fake_B, self.real_A) * lambda_shape
         # D_B(G_B(B))
@@ -185,7 +187,16 @@ class CycleGANModel(BaseModel):
         laplacianMatrix = Variable(laplacianMatrix.cuda())
         imgGrad1 = torch.nn.functional.conv2d(img1, laplacianMatrix, padding=1)
         imgGrad2 = torch.nn.functional.conv2d(img2, laplacianMatrix, padding=1)
-        return self.l1Loss(imgGrad1, imgGrad2)
+        return self.l2Loss(imgGrad1, imgGrad2)
+
+    def batchLoss(self, feat):
+        batch_vec = torch.nn.functional.avg_pool2d(feat, (feat.size(2), feat.size(3)), stride=1)
+        batch_vec = batch_vec.view(batch_vec.size(0), batch_vec.size(1))
+        norm_each_sample = torch.norm(batch_vec, 2, 1, True)
+        batch_vec = batch_vec.div(norm_each_sample.expand_as(batch_vec))
+        batch_simi = torch.matmul(batch_vec, batch_vec.transpose(0, 1))
+        return self.l2Loss(batch_simi, Variable(torch.eye(batch_simi.size(0)).cuda()))
+
 
     def optimize_parameters(self, epoch):
         # forward

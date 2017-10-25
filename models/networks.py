@@ -351,16 +351,19 @@ class NLayerDiscriminator(nn.Module):
             norm_layer(ndf * nf_mult),
             nn.LeakyReLU(0.2, True)
         ]
-
+        self.feat = nn.Sequential(*sequence)
         sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=1, padding=padw)]
 
         if use_sigmoid:
             sequence += [nn.Sigmoid()]
 
         self.model = nn.Sequential(*sequence)
+        self.output = 0
 
     def forward(self, input):
         if len(self.gpu_ids) and isinstance(input.data, torch.cuda.FloatTensor):
+            self.feature = nn.parallel.data_parallel(self.feat, input, self.gpu_ids)
             return nn.parallel.data_parallel(self.model, input, self.gpu_ids)
         else:
+            self.feature = self.feat(input)
             return self.model(input)
