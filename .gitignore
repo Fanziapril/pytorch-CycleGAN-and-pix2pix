@@ -39,7 +39,7 @@ test/.coverage
 */**/*.dylib*
 test/data/legacy_serialized.pt
 *~
-.idea
+.idea/
 .idea/**/workspace.xml
 .idea/workspace.xml
 .idea/**/tasks.xml
