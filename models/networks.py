@@ -129,7 +129,8 @@ class GANLoss(nn.Module):
         target_tensor = self.get_target_tensor(input, target_is_real)
         input_avg = torch.nn.functional.avg_pool2d(input, (input.size(2), input.size(3)))
         target_avg = torch.nn.functional.avg_pool2d(target_tensor, (target_tensor.size(2),target_tensor.size(3)))
-        return self.loss(input, target_tensor)+self.loss(input_avg, target_avg)
+        return self.loss(input, target_tensor)
+#+self.loss(input_avg, target_avg)
         
 # Defines the generator that consists of Resnet blocks between a few
 # downsampling/upsampling operations.
