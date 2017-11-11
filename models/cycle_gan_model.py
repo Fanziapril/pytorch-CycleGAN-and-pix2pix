@@ -49,13 +49,15 @@ class CycleGANModel(BaseModel):
                 self.load_network(self.netD_A, 'D_A', which_epoch, save_dir)
                 self.load_network(self.netD_B, 'D_B', which_epoch, save_dir)
         if self.isTrain and opt.pre_train:
-            which_epoch = 200
-            dirA = '../Experiments/models/4_faces_pix2pix/'
-            dirB = '../Experiments/models/5_faces_pix2pix/'
+            which_epoch = 'latest'
+            #dirA = '../Experiments/models/4_faces_pix2pix/'
+            #dirB = '../Experiments/models/5_faces_pix2pix/'
+            dirA = '../Experiments/models/10_faces_pix2pix/'
+            dirB = '../Experiments/models/12_faces_pix2pix/'
             self.load_network(self.netG_A, 'G', which_epoch, dirA)
             self.load_network(self.netG_B, 'G', which_epoch, dirB)
-            # self.load_network(self.netD_A, 'D', which_epoch, dirA)
-            # self.load_network(self.netD_B, 'D', which_epoch, dirB)
+            #self.load_network(self.netD_A, 'D', which_epoch, dirA)
+            #self.load_network(self.netD_B, 'D', which_epoch, dirB)
 
 
         if self.isTrain:
