@@ -157,8 +157,9 @@ class CycleGANModel(BaseModel):
         #lambda_shape = 0.2
         self.fake_B = self.netG_A.forward(self.real_A)
         pred_fake = self.netD_A.forward(self.fake_B)
-        loss_D_A_batch = self.batchLoss(self.netD_A.feature)
-        self.loss_G_A = self.criterionGAN(pred_fake, True) + loss_D_A_batch
+        self.loss_D_A_batch = self.batchLoss(self.netD_A.feature)
+        #self.loss_G_A = self.criterionGAN(pred_fake, True) + loss_D_A_batch
+        self.loss_G_A = self.criterionGAN(pred_fake, True)
         # Shape loss
         self.loss_shape_A = self.shapeLoss(self.fake_B, self.real_A) * lambda_shape
         # D_B(G_B(B))
@@ -175,7 +176,7 @@ class CycleGANModel(BaseModel):
         self.loss_cycle_B = self.criterionCycle(self.rec_B, self.real_B) * lambda_B
         # combined loss
 
-        self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B + self.loss_shape_A + self.loss_shape_B
+        self.loss_G = self.loss_G_A + self.loss_G_B + self.loss_cycle_A + self.loss_cycle_B + self.loss_idt_A + self.loss_idt_B + self.loss_shape_A + self.loss_shape_B + self.loss_D_A_batch
         self.loss_G.backward()
 
     def shapeLoss(self, img1, img2):
@@ -206,7 +207,7 @@ class CycleGANModel(BaseModel):
         # G_A and G_B
         self.optimizer_G.zero_grad()
         self.backward_G()
-        if epoch > 20:
+        if epoch > self.opt.epoch_fix:
             self.optimizer_G.step()
 
         # D_A
