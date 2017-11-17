@@ -7,7 +7,7 @@ import util.util as util
 from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
-
+from models.VGG_PRETAIN import VggEncoder
 
 class Pix2PixModel(BaseModel):
     def name(self):
