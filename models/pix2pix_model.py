@@ -7,7 +7,7 @@ import util.util as util
 from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
-from models.VGG_PRETAIN import VggEncoder
+from .VGG_PRETRAIN import VggEncoder
 
 class Pix2PixModel(BaseModel):
     def name(self):
@@ -41,6 +41,7 @@ class Pix2PixModel(BaseModel):
             # define loss functions
             self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
             self.criterionL1 = torch.nn.L1Loss()
+            self.VGG = VggEncoder(opt)
 
             # initialize optimizers
             self.optimizer_G = torch.optim.Adam(self.netG.parameters(),
@@ -102,12 +103,12 @@ class Pix2PixModel(BaseModel):
 
         # Second, G(A) = B
         self.loss_G_L1 = self.criterionL1(self.fake_B, self.real_B) * self.opt.lambda_A
-
-        self.loss_G = self.loss_G_GAN + self.loss_G_L1
+        self.loss_G_v  = self.VGG.vggLoss(self.fake_B, self.real_B) * 100
+        self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_v
 
         self.loss_G.backward()
 
-    def optimize_parameters(self):
+    def optimize_parameters(self, epoch):
         self.forward()
 
         self.optimizer_D.zero_grad()
@@ -121,6 +122,7 @@ class Pix2PixModel(BaseModel):
     def get_current_errors(self):
         return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
                             ('G_L1', self.loss_G_L1.data[0]),
+                            ('G_v', self.loss_G_v.data[0]),
                             ('D_real', self.loss_D_real.data[0]),
                             ('D_fake', self.loss_D_fake.data[0])
                             ])

@@ -1,7 +1,12 @@
-import Torch
+import torch
+import torch.nn as nn
+from PIL import Image
+import torchvision.transforms as transforms
+from torch.autograd import Variable
+
 
 class VggEncoder(nn.Module):
-    def __init__(self, config=config):
+    def __init__(self, opt):
         super(VggEncoder, self).__init__()
         self.relu = nn.ReLU()
         self.conv1 = nn.Conv2d(3, 64, (3, 3), (1, 1), (1, 1))
@@ -37,9 +42,16 @@ class VggEncoder(nn.Module):
 
         self.pool6 = nn.AvgPool2d((7, 7))
 
-        if config.load_pretrain:
-            self.load_pretrain(config.vgg_pretrain_path)
+        vgg_pretrain_path = "./models/VGG_reload.pth"
 
+        self.load_pretrain(vgg_pretrain_path)
+        self = self.cuda()
+        mean = Image.open("./models/meanimg.jpg").convert('RGB')
+        translist = [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        toTensor = transforms.Compose(translist)
+        mean = toTensor(mean)
+        mean = mean.expand(opt.batchSize, 3, 224, 224)
+        self.mean = Variable(mean.cuda())
 
     def forward(self, x):
         net = []
@@ -93,10 +105,10 @@ class VggEncoder(nn.Module):
         self.load_state_dict(check_point)
 
     def vggLoss(self, input, target):
-        scale = 224
-        self.A.resize_(scale, scale).copy_(input)
-        self.B.resize_(scale, scale).copy_(target)
-        A = self.forward(self.A)
-        B = self.forward(self.B)
-        return torch.nn.L1loss(A,B)
+
+        A = torch.nn.functional.avg_pool2d(input, 33, 1)
+        B = torch.nn.functional.avg_pool2d(target, 33, 1)
+        A = self.forward(A - self.mean)
+        B = self.forward(B - self.mean)
+        return torch.nn.functional.l1_loss(A, B)
 
