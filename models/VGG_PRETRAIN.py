@@ -43,15 +43,16 @@ class VggEncoder(nn.Module):
         self.pool6 = nn.AvgPool2d((7, 7))
 
         vgg_pretrain_path = "./models/VGG_reload.pth"
-
-        self.load_pretrain(vgg_pretrain_path)
-        self = self.cuda()
-        mean = Image.open("./models/meanimg.jpg").convert('RGB')
-        translist = [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-        toTensor = transforms.Compose(translist)
-        mean = toTensor(mean)
-        mean = mean.expand(opt.batchSize, 3, 224, 224)
-        self.mean = Variable(mean.cuda())
+        check_point = torch.load(vgg_pretrain_path)
+        self.load_state_dict(check_point)
+        #self.load_pretrain(vgg_pretrain_path)
+        #self = self.cuda()
+        # mean = Image.open("./models/meanimg.jpg").convert('RGB')
+        # translist = [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        # toTensor = transforms.Compose(translist)
+        # mean = toTensor(mean)
+        # mean = mean.expand(opt.batchSize, 3, 224, 224)
+        # self.mean = Variable(mean.cuda())
 
     def forward(self, x):
         net = []
@@ -100,15 +101,15 @@ class VggEncoder(nn.Module):
         net14 = self.pool5(net13)
         return net14
 
-    def load_pretrain(self, pretrain_path):
-        check_point = torch.load(pretrain_path)
-        self.load_state_dict(check_point)
+    # def load_pretrain(self, pretrain_path):
+    #     check_point = torch.load(pretrain_path)
+    #     self.load_state_dict(check_point)
 
-    def vggLoss(self, input, target):
-
-        A = torch.nn.functional.avg_pool2d(input, 33, 1)
-        B = torch.nn.functional.avg_pool2d(target, 33, 1)
-        A = self.forward(A - self.mean)
-        B = self.forward(B - self.mean)
-        return torch.nn.functional.l1_loss(A, B)
+    # def vggLoss(self, input, target):
+    #
+    #     A = torch.nn.functional.avg_pool2d(input, 33, 1)
+    #     B = torch.nn.functional.avg_pool2d(target, 33, 1)
+    #     A = self.forward(A - self.mean)
+    #     B = self.forward(B - self.mean)
+    #     return torch.nn.functional.l1_loss(A, B)
 

@@ -3,6 +3,9 @@ import torch.nn as nn
 from torch.nn import init
 import functools
 from torch.autograd import Variable
+from PIL import Image
+import torchvision.transforms as transforms
+from .VGG_PRETRAIN import VggEncoder
 import numpy as np
 import pdb
 ###############################################################################
@@ -87,7 +90,23 @@ def print_network(net):
 ##############################################################################
 # Classes
 ##############################################################################
-
+class VggLoss(nn.Module):
+    def __init__(self, opt):
+        super(VggLoss, self).__init__()
+        mean = Image.open("./models/meanimg.jpg").convert('RGB')
+        translist = [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        toTensor = transforms.Compose(translist)
+        mean = toTensor(mean)
+        mean = mean.expand(opt.batchSize, 3, 224, 224)
+        self.mean = Variable(mean.cuda())
+        self.VGG = VggEncoder(opt)
+        self.VGG = torch.nn.DataParallel(self.VGG).cuda()
+    def forward(self, input, target):
+        A = torch.nn.functional.avg_pool2d(input, 33, 1)
+        B = torch.nn.functional.avg_pool2d(target, 33, 1)
+        A = self.VGG(A - self.mean)
+        B = self.VGG(B - self.mean)
+        return torch.nn.functional.l1_loss(A, B)
 
 # Defines the GAN loss which uses either LSGAN or the regular GAN.
 # When LSGAN is used, it is basically same as MSELoss,
