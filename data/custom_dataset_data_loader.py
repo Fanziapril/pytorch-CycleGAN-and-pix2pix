@@ -32,7 +32,9 @@ class CustomDatasetDataLoader(BaseDataLoader):
             self.dataset,
             batch_size=opt.batchSize,
             shuffle=not opt.serial_batches,
-            num_workers=int(opt.nThreads))
+            num_workers=int(opt.nThreads),
+            drop_last=True)
+
 
     def load_data(self):
         return self.dataloader
