@@ -28,7 +28,7 @@ class Pix2PixModel(BaseModel):
         if self.isTrain:
             use_sigmoid = opt.no_lsgan
             self.netD = networks.define_D(opt.input_nc + opt.output_nc, opt.ndf,
-                                          opt.which_model_netD,
+                                          opt.which_model_netD, opt.D_kw,
                                           opt.n_layers_D, opt.norm, use_sigmoid, self.gpu_ids)
         if not self.isTrain or opt.continue_train:
             save_dir = os.path.join(opt.checkpoints_dir, opt.name)
