@@ -104,8 +104,10 @@ class Pix2PixModel(BaseModel):
 
         # Second, G(A) = B
         self.loss_G_L1 = self.criterionL1(self.fake_B, self.real_B) * self.opt.lambda_A
-        self.loss_G_v  = self.vLoss(self.fake_B, self.real_B) * 100 * self.opt.lambda_B
-        self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_v
+        self.loss_G_v, self.loss_G_Gram = self.vLoss(self.fake_B, self.real_B)
+        self.loss_G_v = self.loss_G_v * 100 * self.opt.lambda_B
+        self.loss_G_Gram = self.loss_G_Gram * self.opt.lambda_Gram
+        self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_v + self.loss_G_Gram
 
         self.loss_G.backward()
 
@@ -124,6 +126,7 @@ class Pix2PixModel(BaseModel):
         return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
                             ('G_L1', self.loss_G_L1.data[0]),
                             ('G_v', self.loss_G_v.data[0]),
+                            ('G_Gram', self.loss_G_Gram.data[0]),
                             ('D_real', self.loss_D_real.data[0]),
                             ('D_fake', self.loss_D_fake.data[0])
                             ])

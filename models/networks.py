@@ -106,8 +106,14 @@ class VggLoss(nn.Module):
         B = torch.nn.functional.avg_pool2d(target, 33, 1)
         A = self.VGG(A - self.mean)
         B = self.VGG(B - self.mean)
-        return torch.nn.functional.l1_loss(A, B)
-
+        return torch.nn.functional.l1_loss(A, B), self.GramianLoss(A, B)
+    def GramianLoss(self, A, B):
+        n, c, h, w = A.size()
+        A = A.view(n, c, -1)
+        B = B.view(n, c, -1)
+        g_A = torch.bmm(A, A.transpose(1, 2))/(h * w)
+        g_B = torch.bmm(B, B.transpose(1, 2))/(h * w)
+        return torch.nn.functional.mse_loss(g_A, g_B, size_average=False) / n
 # Defines the GAN loss which uses either LSGAN or the regular GAN.
 # When LSGAN is used, it is basically same as MSELoss,
 # but it abstracts away the need to create the target label tensor
