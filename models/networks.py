@@ -102,8 +102,8 @@ class VggLoss(nn.Module):
         self.VGG = VggEncoder(opt)
         self.VGG = torch.nn.DataParallel(self.VGG).cuda()
     def forward(self, input, target):
-        A = torch.nn.functional.avg_pool2d(input, 33, 1)
-        B = torch.nn.functional.avg_pool2d(target, 33, 1)
+        A = torch.nn.functional.adaptive_avg_pool2d(input, output_size=224)
+        B = torch.nn.functional.adaptive_avg_pool2d(target, output_size=224)
         A = self.VGG(A - self.mean)
         B = self.VGG(B - self.mean)
         return torch.nn.functional.l1_loss(A, B), self.GramianLoss(A, B)
