@@ -23,6 +23,16 @@ def weights_init(m):
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
 
+def reset_params(net):
+    for m in net.modules():
+        if isinstance(m, nn.Conv2d):
+            init.normal(m.weight, 0.0, 0.02)
+            if m.bias is not None:
+                init.constant(m.bias, 0)
+        elif isinstance(m, nn.BatchNorm2d):
+            # init.constant(m.weight, 1)
+            init.normal(m.weight, 1.0, 0.02)
+            init.constant(m.bias, 0)
 
 def get_norm_layer(norm_type='instance'):
     if norm_type == 'batch':
@@ -47,14 +57,14 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
     elif which_model_netG == 'resnet_6blocks':
         netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6, gpu_ids=gpu_ids)
     elif which_model_netG == 'unet_128':
-        netG = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout, gpu_ids=gpu_ids)
+        netG = UnetGenerator(input_nc, output_nc, 6, ngf, norm_layer=norm_layer, use_dropout=use_dropout, gpu_ids=gpu_ids)
     elif which_model_netG == 'unet_256':
         netG = UnetGenerator(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout, gpu_ids=gpu_ids)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % which_model_netG)
     if len(gpu_ids) > 0:
         netG.cuda(device_id=gpu_ids[0])
-    netG.apply(weights_init)
+    #netG.apply(weights_init)
     return netG
 
 
@@ -270,26 +280,49 @@ class UnetGenerator(nn.Module):
         assert(input_nc == output_nc)
 
         # construct unet structure
-        unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, norm_layer=norm_layer, innermost=True)
-        for i in range(num_downs - 5):
-            unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, unet_block, norm_layer=norm_layer, use_dropout=use_dropout)
-        unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, unet_block, norm_layer=norm_layer)
-        unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, unet_block, norm_layer=norm_layer)
-        unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, unet_block, norm_layer=norm_layer)
-        unet_block = UnetSkipConnectionBlock(output_nc, ngf, unet_block, outermost=True, norm_layer=norm_layer)
+        self.unetconv1 = UnetConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer, innermost=True)
+        self.unetconv2 = UnetConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer)
+        self.unetconv3 = UnetConvBlock(ngf * 4, ngf * 8, norm_layer=norm_layer)
+        self.unetconv4 = UnetConvBlock(ngf * 2, ngf * 4, norm_layer=norm_layer)
+        self.unetconv5 = UnetConvBlock(ngf, ngf * 2, norm_layer=norm_layer)
+        self.unetconv6 = UnetConvBlock(output_nc, ngf, outermost=True, norm_layer=norm_layer)
+        self.unetdeconv1 = UnetdeConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer, innermost=True)
+        self.unetdeconv2 = UnetdeConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer)
+        self.unetdeconv3 = UnetdeConvBlock(ngf * 4, ngf * 8, norm_layer=norm_layer)
+        self.unetdeconv4 = UnetdeConvBlock(ngf * 2, ngf * 4, norm_layer=norm_layer)
+        self.unetdeconv5 = UnetdeConvBlock(ngf, ngf * 2, norm_layer=norm_layer)
+        self.unetdeconv6 = UnetdeConvBlock(output_nc, ngf, outermost=True, norm_layer=norm_layer)
+        vae1 = UnetConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer, innermost=True)
+        vae2 = UnetConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer)
+        vae3 = UnetConvBlock(ngf * 4, ngf * 8, norm_layer=norm_layer)
+        vae4 = UnetConvBlock(ngf * 2, ngf * 4, norm_layer=norm_layer)
+        vae5 = UnetConvBlock(ngf, ngf * 2, norm_layer=norm_layer)
+        vae6 = UnetConvBlock(output_nc, ngf, outermost=True, norm_layer=norm_layer)
+        self.vae = nn.Sequential(vae6, vae5, vae4, vae3, vae2, vae1)
+        # for i in range(num_downs - 5):
+        #     unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, unet_block, norm_layer=norm_layer, use_dropout=use_dropout)
+        # unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, unet_block, norm_layer=norm_layer)
+        # unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, unet_block, norm_layer=norm_layer)
+        # unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, unet_block, norm_layer=norm_layer)
+        # unet_block = UnetSkipConnectionBlock(output_nc, ngf, unet_block, outermost=True, norm_layer=norm_layer)
+        #self.model = unet_block
 
-        self.model = unet_block
+    def forward(self, input, texture):
+        feat6 = self.unetconv6(input)
+        feat5 = self.unetconv5(feat6)
+        feat4 = self.unetconv4(feat5)
+        feat3 = self.unetconv3(feat4)
+        feat2 = self.unetconv2(feat3)
+        feat1 = self.unetconv1(feat2)
+        #feat1 = feat1 + self.vae(texture)
+        confeat1 = self.unetdeconv1(feat1)
+        confeat2 = self.unetdeconv2(torch.cat([feat2, confeat1], 1))
+        confeat3 = self.unetdeconv3(torch.cat([feat3, confeat2], 1))
+        confeat4 = self.unetdeconv4(torch.cat([feat4, confeat3], 1))
+        confeat5 = self.unetdeconv5(torch.cat([feat5, confeat4], 1))
+        confeat6 = self.unetdeconv6(torch.cat([feat6, confeat5], 1))
+        return confeat6
 
-    def forward(self, input):
-        if self.gpu_ids and isinstance(input.data, torch.cuda.FloatTensor):
-            return nn.parallel.data_parallel(self.model, input, self.gpu_ids)
-        else:
-            return self.model(input)
-
-
-# Defines the submodule with skip connection.
-# X -------------------identity---------------------- X
-#   |-- downsampling -- |submodule| -- upsampling --|
 class UnetSkipConnectionBlock(nn.Module):
     def __init__(self, outer_nc, inner_nc,
                  submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm2d, use_dropout=False):
@@ -334,12 +367,86 @@ class UnetSkipConnectionBlock(nn.Module):
                 model = down + [submodule] + up
 
         self.model = nn.Sequential(*model)
+        reset_params(self.model)
 
     def forward(self, x):
         if self.outermost:
             return self.model(x)
         else:
             return torch.cat([x, self.model(x)], 1)
+
+
+
+
+
+
+# Defines the submodule with skip connection.
+# X -------------------identity---------------------- X
+#   |-- downsampling -- |submodule| -- upsampling --|
+class UnetConvBlock(nn.Module):
+    def __init__(self, outer_nc, inner_nc,
+                 submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm2d, use_dropout=False):
+        super(UnetConvBlock, self).__init__()
+        self.outermost = outermost
+        self.innermost = innermost
+        if type(norm_layer) == functools.partial:
+            use_bias = norm_layer.func == nn.InstanceNorm2d
+        else:
+            use_bias = norm_layer == nn.InstanceNorm2d
+
+        downconv = nn.Conv2d(outer_nc, inner_nc, kernel_size=4,
+                             stride=2, padding=1, bias=use_bias)
+        downrelu = nn.LeakyReLU(0.2, True)
+        downnorm = norm_layer(inner_nc)
+
+        if outermost:
+            seq = [downconv]
+        elif innermost:
+            seq = [downrelu, downconv]
+        else:
+            seq = [downrelu, downconv, downnorm]
+
+        self.model = nn.Sequential(*seq)
+        reset_params(self.model)
+    def forward(self, x):
+        return self.model(x)
+
+class UnetdeConvBlock(nn.Module):
+    def __init__(self, outer_nc, inner_nc,
+                 submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm2d,
+                 use_dropout=False):
+        super(UnetdeConvBlock, self).__init__()
+        self.outermost = outermost
+        self.innermost = innermost
+        if type(norm_layer) == functools.partial:
+            use_bias = norm_layer.func == nn.InstanceNorm2d
+        else:
+            use_bias = norm_layer == nn.InstanceNorm2d
+        uprelu = nn.ReLU(True)
+        upnorm = norm_layer(outer_nc)
+
+        if outermost:
+            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1)
+            seq = [uprelu, upconv, nn.Tanh()]
+        elif innermost:
+            upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1, bias=use_bias)
+            seq = [uprelu, upconv, upnorm]
+        else:
+            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
+                                        kernel_size=4, stride=2,
+                                        padding=1, bias=use_bias)
+            if use_dropout:
+                seq = [uprelu, upconv, upnorm, nn.Dropout(0.5)]
+            else:
+                seq = [uprelu, upconv, upnorm]
+
+        self.model = nn.Sequential(*seq)
+    def forward(self, x):
+        return self.model(x)
 
 
 # Defines the PatchGAN discriminator with the specified arguments.
