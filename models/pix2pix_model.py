@@ -67,12 +67,12 @@ class Pix2PixModel(BaseModel):
     def forward(self):
         self.real_A = Variable(self.input_A)
         self.real_B = Variable(self.input_B)
-        self.fake_B = self.netG.forward(self.real_A, self.real_B)
+        self.loss_G_vae, self.fake_B = self.netG.forward(self.real_A, self.real_B, 'train')
 
     # no backprop gradients
     def test(self):
         self.real_A = Variable(self.input_A, volatile=True)
-        self.fake_B = self.netG.forward(self.real_A)
+        self.loss_G_vae, self.fake_B = self.netG.forward(self.real_A, self.real_A, 'test')
         self.real_B = Variable(self.input_B, volatile=True)
 
     # get image paths
@@ -109,7 +109,7 @@ class Pix2PixModel(BaseModel):
             self.loss_G_v, self.loss_G_Gram = self.vLoss(self.fake_B, self.real_B)
             self.loss_G_v = self.loss_G_v * 100 * self.opt.lambda_B
             self.loss_G_Gram = self.loss_G_Gram * self.opt.lambda_Gram
-            self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_v + self.loss_G_Gram
+            self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_v + self.loss_G_Gram + self.loss_G_vae
 
         self.loss_G.backward()
 

@@ -299,6 +299,9 @@ class UnetGenerator(nn.Module):
         vae5 = UnetConvBlock(ngf, ngf * 2, norm_layer=norm_layer)
         vae6 = UnetConvBlock(output_nc, ngf, outermost=True, norm_layer=norm_layer)
         self.vae = nn.Sequential(vae6, vae5, vae4, vae3, vae2, vae1)
+        self.fc1 = nn.Linear(2048, 1024)
+        self.fc2 = nn.Linear(2048, 1024)
+        self.fc3 = nn.Linear(1024, 2048)
         # for i in range(num_downs - 5):
         #     unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, unet_block, norm_layer=norm_layer, use_dropout=use_dropout)
         # unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, unet_block, norm_layer=norm_layer)
@@ -307,21 +310,40 @@ class UnetGenerator(nn.Module):
         # unet_block = UnetSkipConnectionBlock(output_nc, ngf, unet_block, outermost=True, norm_layer=norm_layer)
         #self.model = unet_block
 
-    def forward(self, input, texture):
+    def forward(self, input, texture, train_or_test):
         feat6 = self.unetconv6(input)
         feat5 = self.unetconv5(feat6)
         feat4 = self.unetconv4(feat5)
         feat3 = self.unetconv3(feat4)
         feat2 = self.unetconv2(feat3)
         feat1 = self.unetconv1(feat2)
-        #feat1 = feat1 + self.vae(texture)
+        x = self.vae(texture)
+        x = x.view(-1, 2048)
+        mu = self.fc1(x)
+        logvar = self.fc2(x)
+        sample = self.reparatermize(mu, logvar, train_or_test)
+        z = self.fc3(sample)
+        loss_G_vae = self.vaeloss(x, z, mu, logvar)
+        feat1 = feat1 + z.view_as(feat1)
         confeat1 = self.unetdeconv1(feat1)
         confeat2 = self.unetdeconv2(torch.cat([feat2, confeat1], 1))
         confeat3 = self.unetdeconv3(torch.cat([feat3, confeat2], 1))
         confeat4 = self.unetdeconv4(torch.cat([feat4, confeat3], 1))
         confeat5 = self.unetdeconv5(torch.cat([feat5, confeat4], 1))
         confeat6 = self.unetdeconv6(torch.cat([feat6, confeat5], 1))
-        return confeat6
+        return loss_G_vae, confeat6
+
+    def reparatermize(self, mu, logvar, train_and_test):
+        if train_and_test == 'train':
+            std = torch.exp(0.5*logvar)
+            eps = Variable(torch.randn(std.size()).cuda())
+            return eps.mul(std).add_(mu)
+        else:
+            return mu
+    def vaeloss(self, x, z, mu, logvar):
+        BCE = nn.functional.mse_loss(z, x)
+        KLD = -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp())
+        return BCE+KLD
 
 class UnetSkipConnectionBlock(nn.Module):
     def __init__(self, outer_nc, inner_nc,
