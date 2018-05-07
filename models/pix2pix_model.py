@@ -7,7 +7,7 @@ import util.util as util
 from util.image_pool import ImagePool
 from .base_model import BaseModel
 from . import networks
-
+import torch.nn as nn
 
 class Pix2PixModel(BaseModel):
     def name(self):
@@ -25,6 +25,7 @@ class Pix2PixModel(BaseModel):
         # load/define networks
         self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf,
                                       opt.which_model_netG, opt.norm, not opt.no_dropout, self.gpu_ids)
+        self.netG = nn.DataParallel(self.netG).cuda()
         if self.isTrain:
             use_sigmoid = opt.no_lsgan
             self.netD = networks.define_D(opt.input_nc + opt.output_nc, opt.ndf,
@@ -104,7 +105,7 @@ class Pix2PixModel(BaseModel):
 
         # Second, G(A) = B
         self.loss_G_L1 = self.criterionL1(self.fake_B, self.real_B) * self.opt.lambda_A
-        self.loss_G = self.loss_G_GAN + self.loss_G_L1
+        self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_vae
         if self.opt.lambda_B + self.opt.lambda_Gram > 0:
             self.loss_G_v, self.loss_G_Gram = self.vLoss(self.fake_B, self.real_B)
             self.loss_G_v = self.loss_G_v * 100 * self.opt.lambda_B
@@ -131,13 +132,15 @@ class Pix2PixModel(BaseModel):
                                 ('G_v', self.loss_G_v.data[0]),
                                 ('G_Gram', self.loss_G_Gram.data[0]),
                                 ('D_real', self.loss_D_real.data[0]),
-                                ('D_fake', self.loss_D_fake.data[0])
+                                ('D_fake', self.loss_D_fake.data[0]),
+                                ('Vae', self.loss_G_vae.data[0])
                                 ])
         else:
             return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
                                 ('G_L1', self.loss_G_L1.data[0]),
                                 ('D_real', self.loss_D_real.data[0]),
-                                ('D_fake', self.loss_D_fake.data[0])
+                                ('D_fake', self.loss_D_fake.data[0]),
+                                ('Vae', self.loss_G_vae.data[0])
                                 ])
 
     def get_current_visuals(self):

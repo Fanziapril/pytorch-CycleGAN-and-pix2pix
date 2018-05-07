@@ -29,8 +29,12 @@ def reset_params(net):
             init.normal(m.weight, 0.0, 0.02)
             if m.bias is not None:
                 init.constant(m.bias, 0)
+        elif isinstance(m, nn.Linear):
+            init.normal(m.weight, 0.0, 0.0001)
+            if m.bias is not None:
+                init.constant(m.bias, 0)
         elif isinstance(m, nn.BatchNorm2d):
-            # init.constant(m.weight, 1)
+            init.constant(m.weight, 1)
             init.normal(m.weight, 1.0, 0.02)
             init.constant(m.bias, 0)
 
@@ -299,9 +303,12 @@ class UnetGenerator(nn.Module):
         vae5 = UnetConvBlock(ngf, ngf * 2, norm_layer=norm_layer)
         vae6 = UnetConvBlock(output_nc, ngf, outermost=True, norm_layer=norm_layer)
         self.vae = nn.Sequential(vae6, vae5, vae4, vae3, vae2, vae1)
-        self.fc1 = nn.Linear(2048, 1024)
-        self.fc2 = nn.Linear(2048, 1024)
-        self.fc3 = nn.Linear(1024, 2048)
+        self.fc = nn.Linear(2048, 512)
+        self.relu = nn.ReLU()
+        self.fc1 = nn.Linear(512, 128)
+        self.fc2 = nn.Linear(512, 128)
+
+        self.fc3 = nn.Linear(128, 2048)
         # for i in range(num_downs - 5):
         #     unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, unet_block, norm_layer=norm_layer, use_dropout=use_dropout)
         # unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, unet_block, norm_layer=norm_layer)
@@ -319,11 +326,14 @@ class UnetGenerator(nn.Module):
         feat1 = self.unetconv1(feat2)
         x = self.vae(texture)
         x = x.view(-1, 2048)
+        x = self.fc(x)
+        x = self.relu(x)
         mu = self.fc1(x)
         logvar = self.fc2(x)
         sample = self.reparatermize(mu, logvar, train_or_test)
+        #print sample
         z = self.fc3(sample)
-        loss_G_vae = self.vaeloss(x, z, mu, logvar)
+        loss_G_vae = self.vaeloss(mu, logvar)
         feat1 = feat1 + z.view_as(feat1)
         confeat1 = self.unetdeconv1(feat1)
         confeat2 = self.unetdeconv2(torch.cat([feat2, confeat1], 1))
@@ -335,15 +345,17 @@ class UnetGenerator(nn.Module):
 
     def reparatermize(self, mu, logvar, train_and_test):
         if train_and_test == 'train':
-            std = torch.exp(0.5*logvar)
-            eps = Variable(torch.randn(std.size()).cuda())
+            # std = logvar.mul(0.5).exp_()
+            std = torch.exp(0.5 * logvar)
+            eps = Variable(std.data.new(std.size()).normal_())
+            # print eps
             return eps.mul(std).add_(mu)
+            #return std + mu
         else:
             return mu
-    def vaeloss(self, x, z, mu, logvar):
-        BCE = nn.functional.mse_loss(z, x)
-        KLD = -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp())
-        return BCE+KLD
+    def vaeloss(self, mu, logvar):
+        KLD = (-0.5) * torch.sum(1 + logvar - mu.pow(2) - torch.exp(logvar))
+        return KLD
 
 class UnetSkipConnectionBlock(nn.Module):
     def __init__(self, outer_nc, inner_nc,
