@@ -317,7 +317,7 @@ class UnetGenerator(nn.Module):
         feat3 = self.unetconv3(feat4)
         feat2 = self.unetconv2(feat3)
         feat1 = self.unetconv1(feat2)
-        loss_G_vae = 0
+        loss_G_vae = Variable(torch.zeros(1))
         if self.wvae > 0:
             x = self.vae(texture)
             x = x.view(-1, 2048)
