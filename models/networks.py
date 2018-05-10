@@ -48,7 +48,7 @@ def get_norm_layer(norm_type='instance'):
     return norm_layer
 
 
-def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, gpu_ids=[]):
+def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, gpu_ids=[], lambda_v=0.0):
     netG = None
     use_gpu = len(gpu_ids) > 0
     norm_layer = get_norm_layer(norm_type=norm)
@@ -61,9 +61,9 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
     elif which_model_netG == 'resnet_6blocks':
         netG = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, n_blocks=6, gpu_ids=gpu_ids)
     elif which_model_netG == 'unet_128':
-        netG = UnetGenerator(input_nc, output_nc, 6, ngf, norm_layer=norm_layer, use_dropout=use_dropout, gpu_ids=gpu_ids)
+        netG = UnetGenerator(input_nc, output_nc, 6, ngf, norm_layer=norm_layer, use_dropout=use_dropout, gpu_ids=gpu_ids, wvae = lambda_v)
     elif which_model_netG == 'unet_256':
-        netG = UnetGenerator(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout, gpu_ids=gpu_ids)
+        netG = UnetGenerator(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout, gpu_ids=gpu_ids, wvae = lambda_v)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % which_model_netG)
     if len(gpu_ids) > 0:
@@ -276,10 +276,10 @@ class ResnetBlock(nn.Module):
 # at the bottleneck
 class UnetGenerator(nn.Module):
     def __init__(self, input_nc, output_nc, num_downs, ngf=64,
-                 norm_layer=nn.BatchNorm2d, use_dropout=False, gpu_ids=[]):
+                 norm_layer=nn.BatchNorm2d, use_dropout=False, gpu_ids=[], wvae = 0.0):
         super(UnetGenerator, self).__init__()
         self.gpu_ids = gpu_ids
-
+        self.wvae = wvae
         # currently support only input_nc == output_nc
         assert(input_nc == output_nc)
 
@@ -296,26 +296,19 @@ class UnetGenerator(nn.Module):
         self.unetdeconv4 = UnetdeConvBlock(ngf * 2, ngf * 4, norm_layer=norm_layer)
         self.unetdeconv5 = UnetdeConvBlock(ngf, ngf * 2, norm_layer=norm_layer)
         self.unetdeconv6 = UnetdeConvBlock(output_nc, ngf, outermost=True, norm_layer=norm_layer)
-        vae1 = UnetConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer, innermost=True)
-        vae2 = UnetConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer)
-        vae3 = UnetConvBlock(ngf * 4, ngf * 8, norm_layer=norm_layer)
-        vae4 = UnetConvBlock(ngf * 2, ngf * 4, norm_layer=norm_layer)
-        vae5 = UnetConvBlock(ngf, ngf * 2, norm_layer=norm_layer)
-        vae6 = UnetConvBlock(output_nc, ngf, outermost=True, norm_layer=norm_layer)
-        self.vae = nn.Sequential(vae6, vae5, vae4, vae3, vae2, vae1)
-        self.fc = nn.Linear(2048, 512)
-        self.relu = nn.ReLU()
-        self.fc1 = nn.Linear(512, 128)
-        self.fc2 = nn.Linear(512, 128)
-
-        self.fc3 = nn.Linear(128, 2048)
-        # for i in range(num_downs - 5):
-        #     unet_block = UnetSkipConnectionBlock(ngf * 8, ngf * 8, unet_block, norm_layer=norm_layer, use_dropout=use_dropout)
-        # unet_block = UnetSkipConnectionBlock(ngf * 4, ngf * 8, unet_block, norm_layer=norm_layer)
-        # unet_block = UnetSkipConnectionBlock(ngf * 2, ngf * 4, unet_block, norm_layer=norm_layer)
-        # unet_block = UnetSkipConnectionBlock(ngf, ngf * 2, unet_block, norm_layer=norm_layer)
-        # unet_block = UnetSkipConnectionBlock(output_nc, ngf, unet_block, outermost=True, norm_layer=norm_layer)
-        #self.model = unet_block
+        if self.wvae > 0:
+            vae1 = UnetConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer, innermost=True)
+            vae2 = UnetConvBlock(ngf * 8, ngf * 8, norm_layer=norm_layer)
+            vae3 = UnetConvBlock(ngf * 4, ngf * 8, norm_layer=norm_layer)
+            vae4 = UnetConvBlock(ngf * 2, ngf * 4, norm_layer=norm_layer)
+            vae5 = UnetConvBlock(ngf, ngf * 2, norm_layer=norm_layer)
+            vae6 = UnetConvBlock(output_nc, ngf, outermost=True, norm_layer=norm_layer)
+            self.vae = nn.Sequential(vae6, vae5, vae4, vae3, vae2, vae1)
+            self.fc = nn.Linear(2048, 512)
+            self.relu = nn.ReLU()
+            self.fc1 = nn.Linear(512, 128)
+            self.fc2 = nn.Linear(512, 128)
+            self.fc3 = nn.Linear(128, 2048)
 
     def forward(self, input, texture, train_or_test):
         feat6 = self.unetconv6(input)
@@ -324,17 +317,19 @@ class UnetGenerator(nn.Module):
         feat3 = self.unetconv3(feat4)
         feat2 = self.unetconv2(feat3)
         feat1 = self.unetconv1(feat2)
-        x = self.vae(texture)
-        x = x.view(-1, 2048)
-        x = self.fc(x)
-        x = self.relu(x)
-        mu = self.fc1(x)
-        logvar = self.fc2(x)
-        sample = self.reparatermize(mu, logvar, train_or_test)
-        #print sample
-        z = self.fc3(sample)
-        loss_G_vae = self.vaeloss(mu, logvar)
-        feat1 = feat1 + z.view_as(feat1)
+        loss_G_vae = 0
+        if self.wvae > 0:
+            x = self.vae(texture)
+            x = x.view(-1, 2048)
+            x = self.fc(x)
+            x = self.relu(x)
+            mu = self.fc1(x)
+            logvar = self.fc2(x)
+            sample = self.reparatermize(mu, logvar, train_or_test)
+            #print sample
+            z = self.fc3(sample)
+            loss_G_vae = self.vaeloss(mu, logvar)
+            feat1 = feat1 + z.view_as(feat1)
         confeat1 = self.unetdeconv1(feat1)
         confeat2 = self.unetdeconv2(torch.cat([feat2, confeat1], 1))
         confeat3 = self.unetdeconv3(torch.cat([feat3, confeat2], 1))
