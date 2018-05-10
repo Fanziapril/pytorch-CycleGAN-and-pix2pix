@@ -112,7 +112,7 @@ class Pix2PixModel(BaseModel):
             self.loss_G_Gram = self.loss_G_Gram * self.opt.lambda_Gram
             self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_v + self.loss_G_Gram + self.loss_G_vae
 
-        self.loss_G.backward()
+        self.loss_G.sum().backward()
 
     def optimize_parameters(self, epoch):
         self.forward()
