@@ -106,12 +106,14 @@ class Pix2PixModel(BaseModel):
 
         # Second, G(A) = B
         self.loss_G_L1 = self.criterionL1(self.fake_B, self.real_B) * self.opt.lambda_A
-        self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_vae
+        self.loss_G = self.loss_G_GAN + self.loss_G_L1
         if self.opt.lambda_B + self.opt.lambda_Gram > 0:
             self.loss_G_v, self.loss_G_Gram = self.vLoss(self.fake_B, self.real_B)
             self.loss_G_v = self.loss_G_v * 100 * self.opt.lambda_B
             self.loss_G_Gram = self.loss_G_Gram * self.opt.lambda_Gram
-            self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_v + self.loss_G_Gram + self.loss_G_vae
+            self.loss_G = self.loss_G_GAN + self.loss_G_L1 + self.loss_G_v + self.loss_G_Gram
+        if self.opt.lambda_V > 0:
+            self.loss_G += self.opt.lambda_V * self.loss_G_vae
 
         self.loss_G.sum().backward()
 

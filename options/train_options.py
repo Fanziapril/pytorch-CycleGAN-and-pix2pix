@@ -22,7 +22,6 @@ class TrainOptions(BaseOptions):
         self.parser.add_argument('--lambda_A', type=float, default=80.0, help='weight for cycle loss (A -> B -> A)')
         self.parser.add_argument('--lambda_B', type=float, default=0.0, help='weight for pix2pix: vgg net; cyclegan: cycle loss (B -> A -> B)')
         self.parser.add_argument('--lambda_Gram', type=float, default=0.0, help='weight for GramianMatrix')
-        self.parser.add_argument('--lambda_V', type=float, default=0.0, help='weight for vae loss')
         self.parser.add_argument('--identity', type=float, default=0.0, help='use identity mapping. Setting identity other than 1 has an effect of scaling the weight of the identity mapping loss. For example, if the weight of the identity loss should be 10 times smaller than the weight of the reconstruction loss, please set optidentity = 0.1')
         self.parser.add_argument('--pool_size', type=int, default=0, help='the size of image buffer that stores previously generated images')
         self.parser.add_argument('--no_html', action='store_true', help='do not save intermediate training results to [opt.checkpoints_dir]/[opt.name]/web/')
