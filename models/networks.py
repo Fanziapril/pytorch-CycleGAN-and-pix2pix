@@ -317,7 +317,6 @@ class UnetGenerator(nn.Module):
         feat3 = self.unetconv3(feat4)
         feat2 = self.unetconv2(feat3)
         feat1 = self.unetconv1(feat2)
-        loss_G_vae = Variable(torch.zeros(1))
         if self.wvae > 0:
             x = self.vae(texture)
             x = x.view(-1, 2048)
@@ -336,7 +335,10 @@ class UnetGenerator(nn.Module):
         confeat4 = self.unetdeconv4(torch.cat([feat4, confeat3], 1))
         confeat5 = self.unetdeconv5(torch.cat([feat5, confeat4], 1))
         confeat6 = self.unetdeconv6(torch.cat([feat6, confeat5], 1))
-        return loss_G_vae, confeat6
+	if self.wvae > 0:
+        	return loss_G_vae, confeat6
+	else:
+		return confeat6
 
     def reparatermize(self, mu, logvar, train_and_test):
         if train_and_test == 'train':

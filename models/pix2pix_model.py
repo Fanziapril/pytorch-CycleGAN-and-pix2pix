@@ -69,8 +69,10 @@ class Pix2PixModel(BaseModel):
     def forward(self):
         self.real_A = Variable(self.input_A)
         self.real_B = Variable(self.input_B)
-        self.loss_G_vae, self.fake_B = self.netG.forward(self.real_A, self.real_B, 'train')
-
+	if self.opt.lambda_V > 0:
+        	self.loss_G_vae, self.fake_B = self.netG.forward(self.real_A, self.real_B, 'train')
+	else:
+		self.fake_B = self.netG.forward(self.real_A, self.real_B, 'train')
     # no backprop gradients
     def test(self):
         self.real_A = Variable(self.input_A, volatile=True)
@@ -129,23 +131,38 @@ class Pix2PixModel(BaseModel):
         self.optimizer_G.step()
 
     def get_current_errors(self):
-        if self.opt.lambda_B + self.opt.lambda_Gram > 0:
-            return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
-                                ('G_L1', self.loss_G_L1.data[0]),
-                                ('G_v', self.loss_G_v.data[0]),
-                                ('G_Gram', self.loss_G_Gram.data[0]),
-                                ('D_real', self.loss_D_real.data[0]),
-                                ('D_fake', self.loss_D_fake.data[0]),
-                                ('Vae', self.loss_G_vae.data[0])
-                                ])
-        else:
-            return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
-                                ('G_L1', self.loss_G_L1.data[0]),
-                                ('D_real', self.loss_D_real.data[0]),
-                                ('D_fake', self.loss_D_fake.data[0]),
-                                ('Vae', self.loss_G_vae.data[0])
-                                ])
-
+	if self.opt.lambda_V > 0:
+	        if self.opt.lambda_B + self.opt.lambda_Gram > 0:
+	            return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
+	                                ('G_L1', self.loss_G_L1.data[0]),
+	                                ('G_v', self.loss_G_v.data[0]),
+	                                ('G_Gram', self.loss_G_Gram.data[0]),
+	                                ('D_real', self.loss_D_real.data[0]),
+	                                ('D_fake', self.loss_D_fake.data[0]),
+	                                ('Vae', self.loss_G_vae.data[0])
+	                                ])
+	        else:
+	            return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
+	                                ('G_L1', self.loss_G_L1.data[0]),
+	                                ('D_real', self.loss_D_real.data[0]),
+	                                ('D_fake', self.loss_D_fake.data[0]),
+	                                ('Vae', self.loss_G_vae.data[0])
+	                                ])
+	else:
+		if self.opt.lambda_B + self.opt.lambda_Gram > 0:
+                    return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
+                                        ('G_L1', self.loss_G_L1.data[0]),
+                                        ('G_v', self.loss_G_v.data[0]),
+                                        ('G_Gram', self.loss_G_Gram.data[0]),
+                                        ('D_real', self.loss_D_real.data[0]),
+                                        ('D_fake', self.loss_D_fake.data[0])
+                                        ])
+                else:
+                    return OrderedDict([('G_GAN', self.loss_G_GAN.data[0]),
+                                        ('G_L1', self.loss_G_L1.data[0]),
+                                        ('D_real', self.loss_D_real.data[0]),
+                                        ('D_fake', self.loss_D_fake.data[0])
+                                        ])	
     def get_current_visuals(self):
         real_A = util.tensor2im(self.real_A.data)
         fake_B = util.tensor2im(self.fake_B.data)
