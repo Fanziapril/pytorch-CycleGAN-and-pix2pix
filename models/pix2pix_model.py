@@ -76,7 +76,7 @@ class Pix2PixModel(BaseModel):
     # no backprop gradients
     def test(self):
         self.real_A = Variable(self.input_A, volatile=True)
-        self.loss_G_vae, self.fake_B = self.netG.forward(self.real_A, self.real_A, 'test')
+        self.fake_B = self.netG.forward(self.real_A, self.real_A, 'test')
         self.real_B = Variable(self.input_B, volatile=True)
 
     # get image paths

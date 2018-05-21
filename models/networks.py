@@ -335,7 +335,7 @@ class UnetGenerator(nn.Module):
         confeat4 = self.unetdeconv4(torch.cat([feat4, confeat3], 1))
         confeat5 = self.unetdeconv5(torch.cat([feat5, confeat4], 1))
         confeat6 = self.unetdeconv6(torch.cat([feat6, confeat5], 1))
-	if self.wvae > 0:
+	if self.wvae > 0 and train_and_test == 'train':
         	return loss_G_vae, confeat6
 	else:
 		return confeat6
